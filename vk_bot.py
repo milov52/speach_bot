@@ -14,38 +14,31 @@ def detect_intent_texts(project_id, session_id, text, language_code):
     session = session_client.session_path(project_id, session_id)
 
     text_input = dialogflow.TextInput(text=text, language_code=language_code)
-
     query_input = dialogflow.QueryInput(text=text_input)
 
     response = session_client.detect_intent(
         request={"session": session, "query_input": query_input}
     )
 
-    print("Query text: {}".format(response.query_result.query_text))
-    print(
-        "Detected intent: {} (confidence: {})\n".format(
-            response.query_result.intent.display_name,
-            response.query_result.intent_detection_confidence,
-        )
-    )
-    print("Fulfillment text: {}\n".format(response.query_result.fulfillment_text))
-
-    return response.query_result.fulfillment_text
+    if response.query_result.intent.is_fallback:
+        return None
+    else:
+        return response.query_result.fulfillment_text
 
 
-def echo(event, vk_api):
+def send_message(event, vk_api):
     project_id = os.getenv("PROJECT_ID")
     answer = detect_intent_texts(project_id,
                                  event.user_id,
                                  event.text,
                                  LANGUAGE_CODE)
     print(answer)
-
-    vk_api.messages.send(
-        user_id=event.user_id,
-        message=answer,
-        random_id=random.randint(1, 1000)
-    )
+    if answer:
+        vk_api.messages.send(
+            user_id=event.user_id,
+            message=answer,
+            random_id=random.randint(1, 1000)
+        )
 
 
 if __name__ == "__main__":
@@ -57,4 +50,4 @@ if __name__ == "__main__":
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            echo(event, vk_api)
+            send_message(event, vk_api)
