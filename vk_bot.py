@@ -61,9 +61,10 @@ if __name__ == "__main__":
     token = os.getenv("VK_TOKEN")
 
     vk_session = vk.VkApi(token=token)
+    logger.info('start dataflow vk bot')
+
     vk_api = vk_session.get_api()
 
-    logger.info('start dataflow vk bot')
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
