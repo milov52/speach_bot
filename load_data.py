@@ -33,19 +33,18 @@ def create_intent(project_id, display_name, training_phrases_parts, message_text
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Описание что делает программа'
+        description='Загрузка вопросов и ответов из файла'
     )
     parser.add_argument('source', help='Путь к файлу с вопросами')
     args = parser.parse_args()
 
     load_dotenv()
-
     project_id = os.getenv('PROJECT_ID')
 
     with open(args.source, 'r') as phrases_file:
         phrases_json = phrases_file.read()
     phrases = json.loads(phrases_json)
-    print(phrases)
+
     for intent, intent_value in phrases.items():
         create_intent(project_id, intent, intent_value['questions'], [intent_value['answer']])
 

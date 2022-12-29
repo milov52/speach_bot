@@ -5,7 +5,9 @@ from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
 
 from google_dataflow_api import detect_intent_texts
+from logs import set_logger
 
+logger = set_logger()
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Здравствуйте')
@@ -13,15 +15,11 @@ def start(update: Update, context: CallbackContext) -> None:
 
 def send_message(update: Update, context: CallbackContext) -> None:
     project_id = os.getenv("PROJECT_ID")
-    try:
-        response = detect_intent_texts(project_id,
-                                       update.effective_user.id,
-                                       update.message.text,
-                                       'ru')
-        update.message.reply_text(response.query_result.fulfillment_text)
-    except telegram.error.TelegramError as err:
-        logger.error('Бот упал с ошибкой')
-        logger.error(err, exc_info=True)
+    response = detect_intent_texts(project_id,
+                                   update.effective_user.id,
+                                   update.message.text,
+                                   'ru')
+    update.message.reply_text(response.query_result.fulfillment_text)
 
 
 def main() -> None:
@@ -29,8 +27,8 @@ def main() -> None:
     tg_token = os.getenv("TG_TOKEN")
 
     os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-
     logger.info('start dataflow tg bot')
+
     try:
         updater = Updater(tg_token)
         dispatcher = updater.dispatcher
@@ -39,7 +37,7 @@ def main() -> None:
 
         updater.start_polling()
         updater.idle()
-    except telegram.error.TelegramError as err:
+    except Exception as err:
         logger.error('Бот упал с ошибкой')
         logger.error(err, exc_info=True)
 
