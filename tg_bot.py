@@ -53,14 +53,17 @@ def main() -> None:
     os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
     logger.info('start dataflow tg bot')
-    updater = Updater(tg_token)
-    dispatcher = updater.dispatcher
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, send_message))
+    try:
+        updater = Updater(tg_token)
+        dispatcher = updater.dispatcher
+        dispatcher.add_handler(CommandHandler("start", start))
+        dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, send_message))
 
-    updater.start_polling()
-    updater.idle()
-
+        updater.start_polling()
+        updater.idle()
+    except telegram.error.TelegramError as err:
+        logger.error('Бот упал с ошибкой')
+        logger.error(err, exc_info=True)
 
 if __name__ == '__main__':
     main()
