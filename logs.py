@@ -4,6 +4,8 @@ import os
 import telegram
 from dotenv import load_dotenv
 
+logger = logging.getLogger('Logger')
+
 
 class TelegramLogsHandler(logging.Handler):
     def __init__(self, tg_bot, chat_id):
@@ -20,14 +22,11 @@ def set_logger():
     load_dotenv()
     tg_logger_token = os.getenv("TG_LOGGER_TOKEN")
     chat_id = os.getenv("TG_CHAT_ID")
+    bot_logger = telegram.Bot(token=tg_logger_token)
 
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
     )
-
-    logger = logging.getLogger('Logger')
-
-    bot_logger = telegram.Bot(token=tg_logger_token)
 
     logger.setLevel(logging.DEBUG)
     logger.addHandler(TelegramLogsHandler(bot_logger, chat_id))
