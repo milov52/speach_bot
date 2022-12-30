@@ -1,14 +1,25 @@
 import os
 import random
+import telegram
+import logging
 
 import vk_api as vk
 from dotenv import load_dotenv
 from vk_api.longpoll import VkEventType, VkLongPoll
 
 from google_dataflow_api import detect_intent_texts
-from logs import set_logger
 
-logger = set_logger()
+logger = logging.getLogger('Logger')
+
+class TelegramLogsHandler(logging.Handler):
+    def __init__(self, tg_bot, chat_id):
+        super().__init__()
+        self.chat_id = chat_id
+        self.tg_bot = tg_bot
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.tg_bot.send_message(chat_id=self.chat_id, text=log_entry)
 
 def send_message(event, vk_api):
     project_id = os.getenv("PROJECT_ID")
@@ -27,6 +38,18 @@ def send_message(event, vk_api):
 if __name__ == "__main__":
     load_dotenv()
     token = os.getenv("VK_TOKEN")
+
+    tg_logger_token = os.getenv("TG_LOGGER_TOKEN")
+    chat_id = os.getenv("TG_CHAT_ID")
+
+    bot_logger = telegram.Bot(token=tg_logger_token)
+
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+    )
+
+    logger.setLevel(logging.INFO)
+    logger.addHandler(TelegramLogsHandler(bot_logger, chat_id))
 
     try:
         vk_session = vk.VkApi(token=token)
