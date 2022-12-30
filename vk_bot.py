@@ -13,7 +13,6 @@ from handlers import TelegramLogsHandler
 logger = logging.getLogger('Logger')
 
 
-
 def send_message(event, vk_api):
     project_id = os.getenv("PROJECT_ID")
     response = detect_intent_texts(project_id,
